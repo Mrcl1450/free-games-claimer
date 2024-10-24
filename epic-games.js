@@ -1,4 +1,4 @@
-import { firefox } from 'playwright-firefox'; // stealth plugin needs no outdated playwright-extra
+import { chromium, plugins } from "playwright-ghost/rebrowser";
 import { authenticator } from 'otplib';
 import path from 'path';
 import { existsSync, writeFileSync, appendFileSync } from 'fs';
@@ -25,10 +25,11 @@ if (existsSync(browserPrefs)) {
 }
 
 // https://playwright.dev/docs/auth#multi-factor-authentication
-const context = await firefox.launchPersistentContext(cfg.dir.browser, {
+const context = await chromium.launchPersistentContext(cfg.dir.browser, {
+  plugins: plugins.recommendeds(),
   headless: cfg.headless,
   viewport: { width: cfg.width, height: cfg.height },
-  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0', // see replace of Headless in util.newStealthContext. TODO Windows UA enough to avoid 'device not supported'? update if browser is updated?
+  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36', // see replace of Headless in util.newStealthContext. TODO Windows UA enough to avoid 'device not supported'? update if browser is updated?
   // userAgent firefox (macOS): Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:106.0) Gecko/20100101 Firefox/106.0
   // userAgent firefox (docker): Mozilla/5.0 (X11; Linux aarch64; rv:109.0) Gecko/20100101 Firefox/115.0
   locale: 'en-US', // ignore OS locale to be sure to have english text for locators
@@ -44,7 +45,7 @@ const context = await firefox.launchPersistentContext(cfg.dir.browser, {
 handleSIGINT(context);
 
 // Without stealth plugin, the website shows an hcaptcha on login with username/password and in the last step of claiming a game. It may have other heuristics like unsuccessful logins as well. After <6h (TBD) it resets to no captcha again. Getting a new IP also resets.
-await stealth(context);
+// await stealth(context);
 
 if (!cfg.debug) context.setDefaultTimeout(cfg.timeout);
 
